@@ -14,16 +14,16 @@ public class PhoneBook {
         System.out.println(phonebook);
     }
 
-    public void get(String surname) {
+    public List<Integer> get(String surname) {
 
         List<Integer> list = new ArrayList<>();
-        Integer[] arr = new Integer[list.size()];
-        list.toArray(arr);
+
         for (Map.Entry<Integer, String> o : phonebook.entrySet()) {
             if (surname == o.getValue()) {
-                arr[list.size()] = o.getKey();
+                list.add( o.getKey());
             }
         }
+        return list;
     }
 
     public static void main(String[] args) {
@@ -34,6 +34,8 @@ public class PhoneBook {
         phoneBook.add(9067789, "Ivanov");
 
         phoneBook.get("Ivanov");
+
+        System.out.println(phoneBook.get("Ivanov"));
 
 
     }
