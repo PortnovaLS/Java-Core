@@ -21,7 +21,6 @@ public class RequestWeather {
 
         System.out.println(response.code());
         System.out.println(response.headers());
-        System.out.println(response.protocol());
         System.out.println(body);
 
 
