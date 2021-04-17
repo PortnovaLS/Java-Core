@@ -2,7 +2,8 @@ package Lesson7.Myproject;
 
 public enum Functionality {
     GET_CURRENT_WEATHER("1"),
-    GET_WEATHER_IN_NEXT_FIVE_DAYS("2");
+    GET_WEATHER_IN_NEXT_FIVE_DAYS("2"),
+    GET_SAVED_WEATHER_DATA ("3");
 
     public String numberInUserInterface;
 

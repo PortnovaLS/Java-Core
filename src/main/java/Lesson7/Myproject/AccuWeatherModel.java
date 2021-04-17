@@ -1,5 +1,6 @@
 package Lesson7.Myproject;
 
+import Lesson7.Myproject.Entity.Weather;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.HttpUrl;
@@ -8,6 +9,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
 
 public class AccuWeatherModel implements WeatherModel {
     private static final String PROTOKOL = "http";
@@ -25,7 +28,7 @@ public class AccuWeatherModel implements WeatherModel {
     private static final OkHttpClient okHttpClient = new OkHttpClient();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public void getWeather(Period period, String selectedCity) throws IOException {
+    public void getWeather(Period period, String selectedCity) throws IOException, SQLException {
         String cityKey = detectCityKey(selectedCity);
         if (period == Period.NOW) {
             HttpUrl httpUrl = new HttpUrl.Builder()
@@ -48,15 +51,17 @@ public class AccuWeatherModel implements WeatherModel {
                     .readTree(responseString)
                     .get(0)
                     .at("/LocalObservationDateTime");
-            JsonNode weatherText  =  objectMapper
+            JsonNode weatherText = objectMapper
                     .readTree(responseString)
                     .get(0)
                     .at("/WeatherText");
-            JsonNode temperatureMetricValue  =  objectMapper
+            JsonNode temperatureMetricValue = objectMapper
                     .readTree(responseString)
                     .get(0)
                     .at("/Temperature/Metric/Value");
-
+            DataBaseRepository dataBaseRepository = new DataBaseRepository();
+            Weather weather = new Weather(localObservationDateTime.asText(), weatherText.asText(), temperatureMetricValue.asDouble());
+            dataBaseRepository.saveWeatherData(weather);
             System.out.println("Время " + localObservationDateTime.asText() + "Погода " + weatherText.asText() +
                     "Температура " + temperatureMetricValue.asText());
 
@@ -64,15 +69,15 @@ public class AccuWeatherModel implements WeatherModel {
         //TODO: Домашнее задание со звездочкой
         if (period == Period.FIVE_DAYS) {
             HttpUrl httpUrl = new HttpUrl.Builder()
-                .scheme(PROTOKOL)
-                .host(BASE_HOST)
-                .addPathSegment(FORECAST_ENDPOINT)
-                .addPathSegment(API_V1)
-                .addPathSegment(DAILY_ENDPOINT)
-                .addPathSegment(NUMBER_DAYS)
-                .addPathSegment(cityKey)
-                .addQueryParameter("apikey", API_KEY)
-                .build();
+                    .scheme(PROTOKOL)
+                    .host(BASE_HOST)
+                    .addPathSegment(FORECAST_ENDPOINT)
+                    .addPathSegment(API_V1)
+                    .addPathSegment(DAILY_ENDPOINT)
+                    .addPathSegment(NUMBER_DAYS)
+                    .addPathSegment(cityKey)
+                    .addQueryParameter("apikey", API_KEY)
+                    .build();
 
             Request request = new Request.Builder()
                     .addHeader("accept", "application/json")
@@ -85,6 +90,13 @@ public class AccuWeatherModel implements WeatherModel {
             System.out.println(responseString);
 
         }
+    }
+
+    @Override
+    public void getSavedWeatherData() throws SQLException {
+        DataBaseRepository dataBaseRepository = new DataBaseRepository();
+        List<Weather> list = dataBaseRepository.getSavedWeatherData();
+        System.out.println(list);
     }
 
     public String detectCityKey(String selectedCity) throws IOException {
